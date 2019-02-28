@@ -1,11 +1,13 @@
 require 'pg'
 require 'csv'
+require 'grape'
+require 'sequel'
 
 
 # CSV.foreach("data.csv") do |row|
 #   puts row.inspect
 # end
-# print "\n\n"
+print "\n\n"
 
 
 conn = PG.connect(
@@ -86,6 +88,38 @@ tablePizza.each do |row|
 	puts row.inspect
 end
 
+# GLOBAL VARIABLES 
+$peopleJSON = []
+	allPeople = conn.exec "SELECT * FROM People"
+	allPeople.each do |row|
+		$peopleJSON << row["name"]	# COULD BE PUT IN THE SAME PEOPLES LOOP AS ABOVE
+	end
+
+$pizzaJSON = []
+	allPizza = conn.exec "SELECT * FROM Pizza"
+	allPizza.each do |row|
+		$pizzaJSON << row	# COULD BE PUT IN THE SAME PIZZA LOOP AS ABOVE
+	end
 
 
+# GRAPE MODULE FOR GET ROUTES
+module App
+	class App < Grape::API
+		version 'v1', using: :header, vendor: 'API'
+		 format :json
+		 # prefix :api
 
+		get '/' do
+			"Hey Puppies"
+		end
+
+		get '/people' do
+			$peopleJSON
+		end
+
+		get '/pizzas' do
+			$pizzaJSON
+		end
+
+	end
+end
